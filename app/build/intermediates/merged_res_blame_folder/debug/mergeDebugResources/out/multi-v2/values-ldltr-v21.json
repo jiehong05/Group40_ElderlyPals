@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "my.edu.utar.group40_elderlypals.app-mergeDebugResources-33:/values-ldltr-v21/values-ldltr-v21.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\ccnin\\.gradle\\caches\\9.3.1\\transforms\\26fb2a06fdeb0b1668d699aed9c88540\\workspace\\transformed\\appcompat-1.7.1\\res\\values-ldltr-v21\\values-ldltr-v21.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "112",
+                        "endOffsets": "163"
+                    }
+                }
+            ]
+        }
+    ]
+}
