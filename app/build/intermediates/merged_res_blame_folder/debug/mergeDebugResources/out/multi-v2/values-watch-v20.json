@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "my.edu.utar.group40_elderlypals.app-mergeDebugResources-33:/values-watch-v20/values-watch-v20.xml",
+            "outputFile": "my.edu.utar.group40_elderlypals.app-mergeDebugResources-34:/values-watch-v20/values-watch-v20.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\ccnin\\.gradle\\caches\\9.3.1\\transforms\\26fb2a06fdeb0b1668d699aed9c88540\\workspace\\transformed\\appcompat-1.7.1\\res\\values-watch-v20\\values-watch-v20.xml",
+                    "source": "C:\\Users\\Asus\\.gradle\\caches\\9.3.1\\transforms\\8a65e788b06a3f7b68086b18a8040bc2\\workspace\\transformed\\appcompat-1.7.0\\res\\values-watch-v20\\values-watch-v20.xml",
                     "from": {
                         "startLines": "2,5,8",
                         "startColumns": "4,4,4",

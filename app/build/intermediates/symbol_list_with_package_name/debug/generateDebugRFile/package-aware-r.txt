@@ -1,11 +1,15 @@
 my.edu.utar.group40_elderlypals
 color black
 color white
+drawable ic_heart
 drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable ic_sunglasses
+drawable sos_button_background
 id alert_zone_card
 id alert_zone_med
+id btnOpenVoiceAssistant
+id btnSpeak
 id btn_add
 id btn_call
 id btn_create
@@ -15,7 +19,6 @@ id btn_help_support
 id btn_login
 id btn_message
 id btn_mic
-id btn_next_page
 id btn_profile
 id btn_safety_settings
 id btn_save_profile
@@ -43,13 +46,11 @@ id et_signup_confirm_password
 id et_signup_email
 id et_signup_password
 id et_signup_username
-id fab_voice_assistant
 id grid_container
 id layout_links
 id layout_user_info
 id ll_strength_indicator
 id main
-id main_scroll
 id mood_chart_view
 id rb_blue
 id rb_green
@@ -59,6 +60,7 @@ id rg_color
 id rv_medication
 id scroll_content
 id settings_divider
+id sosButtonContainer
 id switch_hide_info
 id til_address
 id til_login_password
@@ -69,6 +71,10 @@ id til_signup_confirm_password
 id til_signup_email
 id til_signup_password
 id til_signup_username
+id tvRecognizedText
+id tvSystemResponse
+id tvTitle
+id tvWelcome
 id tv_back
 id tv_create_account
 id tv_description
@@ -90,7 +96,6 @@ id tv_signup_title
 id tv_strength_text
 id tv_tired_emoji
 id tv_user_name
-id tv_welcome
 id view_color_dot
 id view_strength_1
 id view_strength_2
@@ -106,6 +111,7 @@ layout activity_profile
 layout activity_second
 layout activity_settings
 layout activity_signup
+layout activity_voice_assistant
 layout dialog_medication
 layout item_medication
 mipmap ic_launcher

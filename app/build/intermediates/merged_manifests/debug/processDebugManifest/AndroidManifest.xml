@@ -6,10 +6,18 @@
 
     <uses-sdk
         android:minSdkVersion="24"
-        android:targetSdkVersion="36" />
+        android:targetSdkVersion="35" />
 
-    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- Declare telephony hardware is not strictly required so it can be installed on tablets -->
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
 
     <permission
         android:name="my.edu.utar.group40_elderlypals.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -31,7 +39,7 @@
         android:testOnly="true"
         android:theme="@style/Theme.Group40_ElderlyPals" >
         <activity
-            android:name="my.edu.utar.group40_elderlypals.MainActivity"
+            android:name="my.edu.utar.group40_elderlypals.LoginActivity"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,31 +47,28 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="my.edu.utar.group40_elderlypals.SignupActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.MenuActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.MainActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.VoiceAssistantActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.MoodActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.MedicationActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.ProfileActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.SettingsActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.BadgesActivity" />
+        <activity android:name="my.edu.utar.group40_elderlypals.SecondActivity" />
         <activity
-            android:name="my.edu.utar.group40_elderlypals.LoginActivity"
+            android:name="com.google.android.gms.common.api.GoogleApiActivity"
             android:exported="false"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.SignupActivity"
-            android:exported="false"
-            android:windowSoftInputMode="stateHidden" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.MenuActivity"
-            android:exported="false" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.MedicationActivity"
-            android:exported="false" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.MoodActivity"
-            android:exported="false" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.BadgesActivity"
-            android:exported="false" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.SettingsActivity"
-            android:exported="false" />
-        <activity
-            android:name="my.edu.utar.group40_elderlypals.ProfileActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <service
+            android:name="androidx.room.MultiInstanceInvalidationService"
+            android:directBootAware="true"
             android:exported="false" />
 
         <provider
