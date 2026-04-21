@@ -26,8 +26,8 @@ public class CommandParser {
             return new VoiceAction("MOOD", "neutral", "Mood logged as neutral.");
         }
 
-        if ((text.contains("took") || text.contains("taken")) &&
-                (text.contains("pill") || text.contains("medicine"))) {
+        if ((text.contains("take") || text.contains("takes") || text.contains("took") || text.contains("taken")) &&
+                (text.contains("pill") || text.contains("medicine") || text.contains("medication"))) {
 
             if (text.contains("yellow")) {
                 return new VoiceAction("MEDICATION", "yellow", "Yellow pill logged successfully.");
