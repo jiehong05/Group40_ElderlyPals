@@ -121,6 +121,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
             Toast.makeText(this, "Mood saved: " + payload, Toast.LENGTH_SHORT).show();
 
         } else if (commandType.equals("MEDICATION")) {
+            saveMedicationToSharedPreferences(payload);
             Toast.makeText(this, "Medication saved: " + payload, Toast.LENGTH_SHORT).show();
 
         } else if (commandType.equals("EMERGENCY")) {
@@ -161,6 +162,32 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
         preferences.edit()
                 .putString("moodValues", newVals)
                 .putString("moodTimes", newTimes)
+                .apply();
+    }
+
+    private void saveMedicationToSharedPreferences(String medicationColor) {
+        SharedPreferences preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+
+        String timeStamp = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+
+        String displayColor = medicationColor;
+        if (medicationColor.equals("yellow")) {
+            displayColor = "Yellow";
+        } else if (medicationColor.equals("red")) {
+            displayColor = "Red";
+        } else if (medicationColor.equals("white")) {
+            displayColor = "White";
+        } else if (medicationColor.equals("green")) {
+            displayColor = "Green";
+        } else if (medicationColor.equals("blue")) {
+            displayColor = "Blue";
+        } else {
+            displayColor = "Unknown";
+        }
+
+        preferences.edit()
+                .putString("lastMedicationColor", displayColor)
+                .putString("lastMedicationTime", timeStamp)
                 .apply();
     }
 

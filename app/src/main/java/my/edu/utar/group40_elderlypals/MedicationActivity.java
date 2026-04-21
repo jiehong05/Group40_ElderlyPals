@@ -11,19 +11,22 @@ import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.textfield.TextInputEditText;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,7 @@ public class MedicationActivity extends AppCompatActivity {
     private MedicationAdapter adapter;
     private List<Medication> medicationList = new ArrayList<>();
     private SharedPreferences preferences;
+    private TextView tvAlertZoneMed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +44,13 @@ public class MedicationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_medication);
 
         preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+
+        tvAlertZoneMed = findViewById(R.id.tv_alert_zone_med);
         recyclerView = findViewById(R.id.rv_medication);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         loadMedications();
+        updateAlertZone();
 
         adapter = new MedicationAdapter(medicationList, new MedicationAdapter.OnMedicationClickListener() {
             @Override
@@ -61,6 +68,7 @@ public class MedicationActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         findViewById(R.id.tv_back).setOnClickListener(v -> finish());
+
         findViewById(R.id.btn_add).setOnClickListener(v -> showMedicationDialog(-1));
 
         findViewById(R.id.tv_logout).setOnClickListener(v -> {
@@ -71,9 +79,27 @@ public class MedicationActivity extends AppCompatActivity {
             finish();
         });
 
-        findViewById(R.id.btn_mic).setOnClickListener(v -> 
-            Toast.makeText(this, "Voice Assistant Coming Soon", Toast.LENGTH_SHORT).show()
-        );
+        findViewById(R.id.btn_mic).setOnClickListener(v -> {
+            Intent intent = new Intent(MedicationActivity.this, VoiceAssistantActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateAlertZone();
+    }
+
+    private void updateAlertZone() {
+        String lastColor = preferences.getString("lastMedicationColor", "");
+        String lastTime = preferences.getString("lastMedicationTime", "");
+
+        if (!lastColor.isEmpty() && !lastTime.isEmpty()) {
+            tvAlertZoneMed.setText("Last taken: " + lastColor + " pill at " + lastTime);
+        } else {
+            tvAlertZoneMed.setText("Alert Zone");
+        }
     }
 
     private void showMedicationDialog(int position) {
@@ -89,22 +115,37 @@ public class MedicationActivity extends AppCompatActivity {
             Medication med = medicationList.get(position);
             etName.setText(med.name);
             etTime.setText(med.time);
+
             switch (med.color) {
-                case "Yellow": rgColor.check(R.id.rb_yellow); break;
-                case "Red": rgColor.check(R.id.rb_red); break;
-                case "Green": rgColor.check(R.id.rb_green); break;
-                case "Blue": rgColor.check(R.id.rb_blue); break;
+                case "Yellow":
+                    rgColor.check(R.id.rb_yellow);
+                    break;
+                case "Red":
+                    rgColor.check(R.id.rb_red);
+                    break;
+                case "Green":
+                    rgColor.check(R.id.rb_green);
+                    break;
+                case "Blue":
+                    rgColor.check(R.id.rb_blue);
+                    break;
             }
         }
 
         builder.setPositiveButton(position == -1 ? "Add" : "Update", (dialog, which) -> {
-            String name = etName.getText().toString();
-            String time = etTime.getText().toString();
+            String name = etName.getText().toString().trim();
+            String time = etTime.getText().toString().trim();
+
             int checkedId = rgColor.getCheckedRadioButtonId();
             String color = "Blue";
-            if (checkedId == R.id.rb_yellow) color = "Yellow";
-            else if (checkedId == R.id.rb_red) color = "Red";
-            else if (checkedId == R.id.rb_green) color = "Green";
+
+            if (checkedId == R.id.rb_yellow) {
+                color = "Yellow";
+            } else if (checkedId == R.id.rb_red) {
+                color = "Red";
+            } else if (checkedId == R.id.rb_green) {
+                color = "Green";
+            }
 
             if (!name.isEmpty() && !time.isEmpty()) {
                 if (position == -1) {
@@ -122,12 +163,14 @@ public class MedicationActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             }
         });
+
         builder.setNegativeButton("Cancel", null);
         builder.show();
     }
 
     private void saveMedications() {
         JSONArray jsonArray = new JSONArray();
+
         try {
             for (Medication med : medicationList) {
                 JSONObject obj = new JSONObject();
@@ -144,9 +187,11 @@ public class MedicationActivity extends AppCompatActivity {
 
     private void loadMedications() {
         String json = preferences.getString("medications", "[]");
+
         try {
             JSONArray jsonArray = new JSONArray(json);
             medicationList.clear();
+
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject obj = jsonArray.getJSONObject(i);
                 medicationList.add(new Medication(
@@ -161,7 +206,10 @@ public class MedicationActivity extends AppCompatActivity {
     }
 
     static class Medication {
-        String name, time, color;
+        String name;
+        String time;
+        String color;
+
         Medication(String name, String time, String color) {
             this.name = name;
             this.time = time;
@@ -195,22 +243,28 @@ public class MedicationActivity extends AppCompatActivity {
             Medication med = list.get(position);
             holder.tvName.setText(med.name);
             holder.tvTime.setText(med.time);
-            
+
             int color;
             switch (med.color) {
-                case "Yellow": color = Color.YELLOW; break;
-                case "Red": color = Color.RED; break;
-                case "Green": color = Color.GREEN; break;
-                default: color = Color.BLUE; break;
+                case "Yellow":
+                    color = Color.YELLOW;
+                    break;
+                case "Red":
+                    color = Color.RED;
+                    break;
+                case "Green":
+                    color = Color.GREEN;
+                    break;
+                default:
+                    color = Color.BLUE;
+                    break;
             }
             holder.viewColor.setBackgroundColor(color);
 
-            // Hover-like effect for icons/buttons
             holder.viewColor.setOnHoverListener((v, event) -> {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_HOVER_ENTER:
                         v.animate().scaleX(1.5f).scaleY(1.5f).setDuration(200).start();
-                        // Play sound twice to make it "louder"
                         v.playSoundEffect(SoundEffectConstants.CLICK);
                         v.postDelayed(() -> v.playSoundEffect(SoundEffectConstants.CLICK), 50);
                         break;
@@ -226,12 +280,16 @@ public class MedicationActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() { return list.size(); }
+        public int getItemCount() {
+            return list.size();
+        }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvName, tvTime;
+            TextView tvName;
+            TextView tvTime;
             View viewColor;
-            ImageButton btnEdit, btnDelete;
+            ImageButton btnEdit;
+            ImageButton btnDelete;
 
             ViewHolder(View itemView) {
                 super(itemView);
