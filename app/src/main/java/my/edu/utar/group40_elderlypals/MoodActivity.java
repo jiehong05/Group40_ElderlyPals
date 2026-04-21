@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -50,7 +51,7 @@ public class MoodActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.tv_back).setOnClickListener(v -> finish());
-        
+
         findViewById(R.id.tv_logout).setOnClickListener(v -> {
             preferences.edit().putBoolean("isLoggedIn", false).apply();
             Intent intent = new Intent(this, LoginActivity.class);
@@ -59,22 +60,31 @@ public class MoodActivity extends AppCompatActivity {
             finish();
         });
 
-        // Click listeners for mood cards
         setupMoodCardHover(findViewById(R.id.cv_happy), 4, "Happy");
         setupMoodCardHover(findViewById(R.id.cv_neutral), 3, "Neutral");
         setupMoodCardHover(findViewById(R.id.cv_sad), 2, "Sad");
         setupMoodCardHover(findViewById(R.id.cv_tired), 1, "Tired");
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMoodData();
+    }
+
     private void setupMoodCardHover(View view, int value, String label) {
         view.setOnClickListener(v -> recordMood(value, label));
-        
-        // Find the emoji TextView specifically
+
         final View emojiView;
-        if (view.getId() == R.id.cv_happy) emojiView = findViewById(R.id.tv_happy_emoji);
-        else if (view.getId() == R.id.cv_neutral) emojiView = findViewById(R.id.tv_neutral_emoji);
-        else if (view.getId() == R.id.cv_sad) emojiView = findViewById(R.id.tv_sad_emoji);
-        else emojiView = findViewById(R.id.tv_tired_emoji);
+        if (view.getId() == R.id.cv_happy) {
+            emojiView = findViewById(R.id.tv_happy_emoji);
+        } else if (view.getId() == R.id.cv_neutral) {
+            emojiView = findViewById(R.id.tv_neutral_emoji);
+        } else if (view.getId() == R.id.cv_sad) {
+            emojiView = findViewById(R.id.tv_sad_emoji);
+        } else {
+            emojiView = findViewById(R.id.tv_tired_emoji);
+        }
 
         view.setOnHoverListener((v, event) -> {
             switch (event.getAction()) {
@@ -82,18 +92,15 @@ public class MoodActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_HOVER_MOVE:
                     if (emojiView != null && emojiView.getScaleX() == 1.0f) {
                         emojiView.animate().scaleX(1.5f).scaleY(1.5f).setDuration(200).start();
-                        // Play sound twice rapidly to simulate "twice as loud"
                         emojiView.playSoundEffect(SoundEffectConstants.CLICK);
                         emojiView.postDelayed(() -> emojiView.playSoundEffect(SoundEffectConstants.CLICK), 50);
                     }
                     return true;
+
                 case MotionEvent.ACTION_HOVER_EXIT:
                     if (emojiView != null) {
-                        emojiView.postDelayed(() -> {
-                            if (emojiView != null) {
-                                emojiView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
-                            }
-                        }, 500);
+                        emojiView.postDelayed(() ->
+                                emojiView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start(), 500);
                     }
                     return true;
             }
@@ -103,11 +110,10 @@ public class MoodActivity extends AppCompatActivity {
 
     private void recordMood(int value, String label) {
         String timeStamp = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-        
+
         moodValues.add(value);
         timestamps.add(timeStamp);
 
-        // Keep only last 7 entries for the chart to remain readable
         if (moodValues.size() > 7) {
             moodValues.remove(0);
             timestamps.remove(0);
@@ -115,23 +121,24 @@ public class MoodActivity extends AppCompatActivity {
 
         saveMoodData();
         moodChartView.setData(new ArrayList<>(moodValues), new ArrayList<>(timestamps));
-        
+
         Toast.makeText(this, "Recorded: " + label + " at " + timeStamp, Toast.LENGTH_SHORT).show();
     }
 
     private void saveMoodData() {
         StringBuilder valStr = new StringBuilder();
         StringBuilder timeStr = new StringBuilder();
-        
+
         for (int i = 0; i < moodValues.size(); i++) {
             valStr.append(moodValues.get(i));
             timeStr.append(timestamps.get(i));
+
             if (i < moodValues.size() - 1) {
                 valStr.append(",");
                 timeStr.append(",");
             }
         }
-        
+
         preferences.edit()
                 .putString("moodValues", valStr.toString())
                 .putString("moodTimes", timeStr.toString())
@@ -142,14 +149,25 @@ public class MoodActivity extends AppCompatActivity {
         String savedVals = preferences.getString("moodValues", "");
         String savedTimes = preferences.getString("moodTimes", "");
 
-        if (!savedVals.isEmpty()) {
+        moodValues.clear();
+        timestamps.clear();
+
+        if (!savedVals.isEmpty() && !savedTimes.isEmpty()) {
             String[] valArr = savedVals.split(",");
             String[] timeArr = savedTimes.split(",");
-            for (int i = 0; i < valArr.length; i++) {
-                moodValues.add(Integer.parseInt(valArr[i]));
-                timestamps.add(timeArr[i]);
+
+            int count = Math.min(valArr.length, timeArr.length);
+
+            for (int i = 0; i < count; i++) {
+                try {
+                    moodValues.add(Integer.parseInt(valArr[i]));
+                    timestamps.add(timeArr[i]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            moodChartView.setData(moodValues, timestamps);
         }
+
+        moodChartView.setData(new ArrayList<>(moodValues), new ArrayList<>(timestamps));
     }
 }

@@ -1,16 +1,23 @@
 package my.edu.utar.group40_elderlypals;
 
 public class VoiceAction {
-    private String type;
+
+    private String commandType;
+    private String payload;
     private String message;
 
-    public VoiceAction(String type, String message) {
-        this.type = type;
+    public VoiceAction(String commandType, String payload, String message) {
+        this.commandType = commandType;
+        this.payload = payload;
         this.message = message;
     }
 
-    public String getType() {
-        return type;
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public String getPayload() {
+        return payload;
     }
 
     public String getMessage() {

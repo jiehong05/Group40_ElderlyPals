@@ -1,8 +1,10 @@
 package my.edu.utar.group40_elderlypals;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
@@ -15,7 +17,9 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Locale;
 
 public class VoiceAssistantActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
@@ -98,7 +102,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
         intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Please speak now");
 
         try {
@@ -109,41 +113,55 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
     }
 
     private void handleAction(VoiceAction action) {
-        String type = action.getType();
+        String commandType = action.getCommandType();
+        String payload = action.getPayload();
 
-        if (type.equals("MOOD_HAPPY")) {
-            saveMoodPlaceholder("Happy");
-        } else if (type.equals("MOOD_SAD")) {
-            saveMoodPlaceholder("Sad");
-        } else if (type.equals("MOOD_TIRED")) {
-            saveMoodPlaceholder("Tired");
-        } else if (type.equals("MOOD_NEUTRAL")) {
-            saveMoodPlaceholder("Neutral");
-        } else if (type.equals("MEDICATION_YELLOW")) {
-            saveMedicationPlaceholder("Yellow Pill");
-        } else if (type.equals("MEDICATION_RED")) {
-            saveMedicationPlaceholder("Red Pill");
-        } else if (type.equals("MEDICATION_WHITE")) {
-            saveMedicationPlaceholder("White Pill");
-        } else if (type.equals("MEDICATION_GREEN")) {
-            saveMedicationPlaceholder("Green Pill");
-        } else if (type.equals("MEDICATION_TAKEN")) {
-            saveMedicationPlaceholder("Unknown Pill");
-        } else if (type.equals("EMERGENCY")) {
-            triggerEmergencyPlaceholder();
+        if (commandType.equals("MOOD")) {
+            saveMoodToSharedPreferences(payload);
+            Toast.makeText(this, "Mood saved: " + payload, Toast.LENGTH_SHORT).show();
+
+        } else if (commandType.equals("MEDICATION")) {
+            Toast.makeText(this, "Medication saved: " + payload, Toast.LENGTH_SHORT).show();
+
+        } else if (commandType.equals("EMERGENCY")) {
+            Toast.makeText(this, "Emergency action triggered", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void saveMoodPlaceholder(String mood) {
-        Toast.makeText(this, "Mood saved: " + mood, Toast.LENGTH_SHORT).show();
-    }
+    private void saveMoodToSharedPreferences(String moodLabel) {
+        SharedPreferences preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
-    private void saveMedicationPlaceholder(String medicineName) {
-        Toast.makeText(this, "Medication saved: " + medicineName, Toast.LENGTH_SHORT).show();
-    }
+        int moodValue = 3;
+        if (moodLabel.equals("happy")) {
+            moodValue = 4;
+        } else if (moodLabel.equals("neutral")) {
+            moodValue = 3;
+        } else if (moodLabel.equals("sad")) {
+            moodValue = 2;
+        } else if (moodLabel.equals("tired")) {
+            moodValue = 1;
+        }
 
-    private void triggerEmergencyPlaceholder() {
-        Toast.makeText(this, "Emergency action triggered", Toast.LENGTH_SHORT).show();
+        String savedVals = preferences.getString("moodValues", "");
+        String savedTimes = preferences.getString("moodTimes", "");
+
+        String timeStamp = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+
+        String newVals;
+        String newTimes;
+
+        if (savedVals.isEmpty()) {
+            newVals = String.valueOf(moodValue);
+            newTimes = timeStamp;
+        } else {
+            newVals = savedVals + "," + moodValue;
+            newTimes = savedTimes + "," + timeStamp;
+        }
+
+        preferences.edit()
+                .putString("moodValues", newVals)
+                .putString("moodTimes", newTimes)
+                .apply();
     }
 
     private void speakOut(String message) {
