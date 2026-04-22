@@ -22,9 +22,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
+import android.app.AlertDialog;
+import my.edu.utar.group40_elderlypals.internal_integration.EmergencyManager;
+import my.edu.utar.group40_elderlypals.internal_integration.LocationHelper;
+
 public class VoiceAssistantActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
     private Button btnSpeak;
+
+    private ActivityResultLauncher<String> callPermissionLauncher;
+
+    private ActivityResultLauncher<String> locationPermissionLauncher;
+    private LocationHelper locationHelper;
+    private EmergencyManager emergencyManager;
     private TextView tvRecognizedText;
     private TextView tvSystemResponse;
     private TextToSpeech textToSpeech;
@@ -42,11 +52,84 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
         tvSystemResponse = findViewById(R.id.tvSystemResponse);
 
         textToSpeech = new TextToSpeech(this, this);
-
+        locationHelper = new LocationHelper(this);
+        emergencyManager = new EmergencyManager();
+        setupLocationPermissionLauncher();
+        setupCallPermissionLauncher();
         setupSpeechLauncher();
         setupPermissionLauncher();
 
         btnSpeak.setOnClickListener(v -> checkAudioPermission());
+    }
+
+    private void setupCallPermissionLauncher() {
+        callPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        triggerEmergencyWithLocation();
+                    } else {
+                        Toast.makeText(this, "Call permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void setupLocationPermissionLauncher() {
+        locationPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        triggerEmergencyWithLocation();
+                    } else {
+                        Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+
+    private void checkLocationPermissionAndTriggerEmergency() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
+                != PackageManager.PERMISSION_GRANTED) {
+            callPermissionLauncher.launch(Manifest.permission.CALL_PHONE);
+            return;
+        }
+
+        triggerEmergencyWithLocation();
+    }
+    private void triggerEmergencyWithLocation() {
+        locationHelper.getCurrentLocation((lat, lon) -> {
+            String emergencyMessage = emergencyManager.createEmergencyMessage(lat, lon);
+
+            runOnUiThread(() -> {
+                tvSystemResponse.setText(emergencyMessage);
+                speakOut("Emergency alert prepared.");
+
+                new AlertDialog.Builder(VoiceAssistantActivity.this)
+                        .setTitle("Emergency Alert")
+                        .setMessage(emergencyMessage)
+                        .setPositiveButton("Call Now", (dialog, which) -> {
+                            String emergencyNumber = "tel:01118770588";
+                            Intent callIntent = new Intent(Intent.ACTION_CALL);
+                            callIntent.setData(android.net.Uri.parse(emergencyNumber));
+
+                            try {
+                                startActivity(callIntent);
+                            } catch (SecurityException e) {
+                                Toast.makeText(this, "Please enable Call permissions!", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        });
     }
 
     private void setupSpeechLauncher() {
@@ -125,7 +208,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
             Toast.makeText(this, "Medication saved: " + payload, Toast.LENGTH_SHORT).show();
 
         } else if (commandType.equals("EMERGENCY")) {
-            Toast.makeText(this, "Emergency action triggered", Toast.LENGTH_SHORT).show();
+            checkLocationPermissionAndTriggerEmergency();
         }
     }
 
