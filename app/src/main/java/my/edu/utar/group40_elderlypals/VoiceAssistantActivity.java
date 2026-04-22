@@ -168,9 +168,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
     private void saveMedicationToSharedPreferences(String medicationColor) {
         SharedPreferences preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
-        String timeStamp = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-
-        String displayColor = medicationColor;
+        String displayColor;
         if (medicationColor.equals("yellow")) {
             displayColor = "Yellow";
         } else if (medicationColor.equals("red")) {
@@ -185,7 +183,40 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
             displayColor = "Unknown";
         }
 
+        String timeStamp = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+                .format(new java.util.Date());
+
+        String oldHistory = preferences.getString("medicationHistory", "");
+        String[] lines = oldHistory.isEmpty() ? new String[0] : oldHistory.split("\n");
+
+        StringBuilder updatedHistory = new StringBuilder();
+        boolean found = false;
+
+        for (String line : lines) {
+            if (line.startsWith(displayColor + " pill at ")) {
+                // Replace old record of same color with newest time
+                if (updatedHistory.length() > 0) {
+                    updatedHistory.append("\n");
+                }
+                updatedHistory.append(displayColor).append(" pill at ").append(timeStamp);
+                found = true;
+            } else if (!line.trim().isEmpty()) {
+                if (updatedHistory.length() > 0) {
+                    updatedHistory.append("\n");
+                }
+                updatedHistory.append(line);
+            }
+        }
+
+        if (!found) {
+            if (updatedHistory.length() > 0) {
+                updatedHistory.append("\n");
+            }
+            updatedHistory.append(displayColor).append(" pill at ").append(timeStamp);
+        }
+
         preferences.edit()
+                .putString("medicationHistory", updatedHistory.toString())
                 .putString("lastMedicationColor", displayColor)
                 .putString("lastMedicationTime", timeStamp)
                 .apply();

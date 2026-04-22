@@ -92,11 +92,10 @@ public class MedicationActivity extends AppCompatActivity {
     }
 
     private void updateAlertZone() {
-        String lastColor = preferences.getString("lastMedicationColor", "");
-        String lastTime = preferences.getString("lastMedicationTime", "");
+        String medicationHistory = preferences.getString("medicationHistory", "");
 
-        if (!lastColor.isEmpty() && !lastTime.isEmpty()) {
-            tvAlertZoneMed.setText("Last taken: " + lastColor + " pill at " + lastTime);
+        if (!medicationHistory.isEmpty()) {
+            tvAlertZoneMed.setText(medicationHistory);
         } else {
             tvAlertZoneMed.setText("Alert Zone");
         }
