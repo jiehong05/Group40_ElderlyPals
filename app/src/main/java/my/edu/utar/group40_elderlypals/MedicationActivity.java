@@ -23,10 +23,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,22 +31,22 @@ public class MedicationActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private MedicationAdapter adapter;
     private List<Medication> medicationList = new ArrayList<>();
-    private SharedPreferences preferences;
     private TextView tvAlertZoneMed;
+
+    private HealthVaultDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_medication);
 
-        preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        db = HealthVaultDatabase.getInstance(this);
 
         tvAlertZoneMed = findViewById(R.id.tv_alert_zone_med);
         recyclerView = findViewById(R.id.rv_medication);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        loadMedications();
-        updateAlertZone();
+        refreshList();
 
         adapter = new MedicationAdapter(medicationList, new MedicationAdapter.OnMedicationClickListener() {
             @Override
@@ -60,19 +56,19 @@ public class MedicationActivity extends AppCompatActivity {
 
             @Override
             public void onDelete(int position) {
-                medicationList.remove(position);
-                saveMedications();
-                adapter.notifyItemRemoved(position);
+                // CRUD: Delete - 从数据库删除
+                db.medicationDao().delete(medicationList.get(position));
+                refreshList(); // 刷新列表
             }
         });
         recyclerView.setAdapter(adapter);
 
         findViewById(R.id.tv_back).setOnClickListener(v -> finish());
-
         findViewById(R.id.btn_add).setOnClickListener(v -> showMedicationDialog(-1));
 
         findViewById(R.id.tv_logout).setOnClickListener(v -> {
-            preferences.edit().putBoolean("isLoggedIn", false).apply();
+            SharedPreferences prefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+            prefs.edit().putBoolean("isLoggedIn", false).apply();
             Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
@@ -85,19 +81,12 @@ public class MedicationActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateAlertZone();
-    }
-
-    private void updateAlertZone() {
-        String medicationHistory = preferences.getString("medicationHistory", "");
-
-        if (!medicationHistory.isEmpty()) {
-            tvAlertZoneMed.setText(medicationHistory);
-        } else {
-            tvAlertZoneMed.setText("Alert Zone");
+    private void refreshList() {
+        medicationList.clear();
+        // CRUD: Read - 从数据库获取所有药
+        medicationList.addAll(db.medicationDao().getAllMedications());
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -114,20 +103,13 @@ public class MedicationActivity extends AppCompatActivity {
             Medication med = medicationList.get(position);
             etName.setText(med.name);
             etTime.setText(med.time);
-
-            switch (med.color) {
-                case "Yellow":
-                    rgColor.check(R.id.rb_yellow);
-                    break;
-                case "Red":
-                    rgColor.check(R.id.rb_red);
-                    break;
-                case "Green":
-                    rgColor.check(R.id.rb_green);
-                    break;
-                case "Blue":
-                    rgColor.check(R.id.rb_blue);
-                    break;
+            if (med.color != null) {
+                switch (med.color) {
+                    case "Yellow": rgColor.check(R.id.rb_yellow); break;
+                    case "Red": rgColor.check(R.id.rb_red); break;
+                    case "Green": rgColor.check(R.id.rb_green); break;
+                    case "Blue": rgColor.check(R.id.rb_blue); break;
+                }
             }
         }
 
@@ -137,27 +119,21 @@ public class MedicationActivity extends AppCompatActivity {
 
             int checkedId = rgColor.getCheckedRadioButtonId();
             String color = "Blue";
-
-            if (checkedId == R.id.rb_yellow) {
-                color = "Yellow";
-            } else if (checkedId == R.id.rb_red) {
-                color = "Red";
-            } else if (checkedId == R.id.rb_green) {
-                color = "Green";
-            }
+            if (checkedId == R.id.rb_yellow) color = "Yellow";
+            else if (checkedId == R.id.rb_red) color = "Red";
+            else if (checkedId == R.id.rb_green) color = "Green";
 
             if (!name.isEmpty() && !time.isEmpty()) {
                 if (position == -1) {
-                    medicationList.add(new Medication(name, time, color));
-                    adapter.notifyItemInserted(medicationList.size() - 1);
+                    db.medicationDao().insert(new Medication(name, time, color));
                 } else {
                     Medication med = medicationList.get(position);
                     med.name = name;
                     med.time = time;
                     med.color = color;
-                    adapter.notifyItemChanged(position);
+                    db.medicationDao().update(med);
                 }
-                saveMedications();
+                refreshList();
             } else {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             }
@@ -165,55 +141,6 @@ public class MedicationActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Cancel", null);
         builder.show();
-    }
-
-    private void saveMedications() {
-        JSONArray jsonArray = new JSONArray();
-
-        try {
-            for (Medication med : medicationList) {
-                JSONObject obj = new JSONObject();
-                obj.put("name", med.name);
-                obj.put("time", med.time);
-                obj.put("color", med.color);
-                jsonArray.put(obj);
-            }
-            preferences.edit().putString("medications", jsonArray.toString()).apply();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadMedications() {
-        String json = preferences.getString("medications", "[]");
-
-        try {
-            JSONArray jsonArray = new JSONArray(json);
-            medicationList.clear();
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject obj = jsonArray.getJSONObject(i);
-                medicationList.add(new Medication(
-                        obj.getString("name"),
-                        obj.getString("time"),
-                        obj.getString("color")
-                ));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    static class Medication {
-        String name;
-        String time;
-        String color;
-
-        Medication(String name, String time, String color) {
-            this.name = name;
-            this.time = time;
-            this.color = color;
-        }
     }
 
     static class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.ViewHolder> {
@@ -243,53 +170,27 @@ public class MedicationActivity extends AppCompatActivity {
             holder.tvName.setText(med.name);
             holder.tvTime.setText(med.time);
 
-            int color;
-            switch (med.color) {
-                case "Yellow":
-                    color = Color.YELLOW;
-                    break;
-                case "Red":
-                    color = Color.RED;
-                    break;
-                case "Green":
-                    color = Color.GREEN;
-                    break;
-                default:
-                    color = Color.BLUE;
-                    break;
+            int colorCode;
+            switch (med.color != null ? med.color : "Blue") {
+                case "Yellow": colorCode = Color.YELLOW; break;
+                case "Red": colorCode = Color.RED; break;
+                case "Green": colorCode = Color.GREEN; break;
+                default: colorCode = Color.BLUE; break;
             }
-            holder.viewColor.setBackgroundColor(color);
-
-            holder.viewColor.setOnHoverListener((v, event) -> {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_HOVER_ENTER:
-                        v.animate().scaleX(1.5f).scaleY(1.5f).setDuration(200).start();
-                        v.playSoundEffect(SoundEffectConstants.CLICK);
-                        v.postDelayed(() -> v.playSoundEffect(SoundEffectConstants.CLICK), 50);
-                        break;
-                    case MotionEvent.ACTION_HOVER_EXIT:
-                        v.postDelayed(() -> v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start(), 500);
-                        break;
-                }
-                return false;
-            });
+            holder.viewColor.setBackgroundColor(colorCode);
 
             holder.btnEdit.setOnClickListener(v -> listener.onEdit(position));
             holder.btnDelete.setOnClickListener(v -> listener.onDelete(position));
+
         }
 
         @Override
-        public int getItemCount() {
-            return list.size();
-        }
+        public int getItemCount() { return list.size(); }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvName;
-            TextView tvTime;
+            TextView tvName, tvTime;
             View viewColor;
-            ImageButton btnEdit;
-            ImageButton btnDelete;
-
+            ImageButton btnEdit, btnDelete;
             ViewHolder(View itemView) {
                 super(itemView);
                 tvName = itemView.findViewById(R.id.tv_med_name);

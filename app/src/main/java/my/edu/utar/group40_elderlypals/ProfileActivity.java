@@ -1,7 +1,5 @@
 package my.edu.utar.group40_elderlypals;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
@@ -14,14 +12,15 @@ public class ProfileActivity extends AppCompatActivity {
 
     private TextInputEditText etName, etPhone, etAddress;
     private SwitchMaterial switchHideInfo;
-    private SharedPreferences preferences;
+
+    private HealthVaultDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+        db = HealthVaultDatabase.getInstance(this);
 
         etName = findViewById(R.id.et_name);
         etPhone = findViewById(R.id.et_phone);
@@ -29,15 +28,22 @@ public class ProfileActivity extends AppCompatActivity {
         switchHideInfo = findViewById(R.id.switch_hide_info);
         Button btnSave = findViewById(R.id.btn_save_profile);
 
-        // Load existing data
-        etName.setText(preferences.getString("userName", ""));
-        etPhone.setText(preferences.getString("userPhone", ""));
-        etAddress.setText(preferences.getString("userAddress", ""));
-        switchHideInfo.setChecked(preferences.getBoolean("hideInfo", false));
+        loadProfileData();
 
         findViewById(R.id.tv_back).setOnClickListener(v -> finish());
 
         btnSave.setOnClickListener(v -> saveProfile());
+    }
+
+    private void loadProfileData() {
+        HealthCard profile = db.healthCardDao().getHealthCard();
+
+        if (profile != null) {
+            etName.setText(profile.userName);
+            etPhone.setText(profile.userPhone);
+            etAddress.setText(profile.userAddress);
+            switchHideInfo.setChecked(profile.hideInfo);
+        }
     }
 
     private void saveProfile() {
@@ -51,7 +57,6 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Basic phone validation (e.g. 012-3456789)
         if (!phone.matches("\\d{3}-\\d{7,8}")) {
             etPhone.setError("Invalid format. Use 012-3456789");
             return;
@@ -62,14 +67,10 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("userName", name);
-        editor.putString("userPhone", phone);
-        editor.putString("userAddress", address);
-        editor.putBoolean("hideInfo", hideInfo);
-        editor.apply();
+        HealthCard newProfile = new HealthCard(name, phone, address, hideInfo);
+        db.healthCardDao().insertOrUpdate(newProfile);
 
-        Toast.makeText(this, "Profile saved successfully", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Profile saved successfully in Health Vault", Toast.LENGTH_SHORT).show();
         finish();
     }
 }
