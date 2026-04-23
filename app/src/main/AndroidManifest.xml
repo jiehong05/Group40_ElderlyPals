@@ -23,7 +23,7 @@
         android:theme="@style/Theme.Group40_ElderlyPals">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,7 +32,7 @@
         </activity>
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".MenuActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
 
@@ -41,9 +41,9 @@
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
 
-        <activity
-            android:name=".MenuActivity"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".MenuActivity"-->
+<!--            android:exported="false" />-->
 
         <activity
             android:name=".MedicationActivity"
