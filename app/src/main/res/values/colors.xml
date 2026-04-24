@@ -1,5 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
+    <color name="black">#1F2430</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="ep_bg">#F7F4FB</color>
+    <color name="ep_surface">#FFFFFFFF</color>
+    <color name="ep_surface_soft">#F3EFFB</color>
+
+    <color name="ep_primary">#6A4FC3</color>
+    <color name="ep_primary_dark">#593FB1</color>
+    <color name="ep_primary_light">#EDE7FB</color>
+
+    <color name="ep_blue_soft">#E3F0FF</color>
+    <color name="ep_green_soft">#E7F6EA</color>
+    <color name="ep_yellow_soft">#FFF3CC</color>
+    <color name="ep_red_soft">#FFE3E3</color>
+
+    <color name="ep_green">#49A65A</color>
+    <color name="ep_red">#E55353</color>
+
+    <color name="ep_text_primary">#333333</color>
+    <color name="ep_text_secondary">#666666</color>
+    <color name="ep_text_hint">#9C96B0</color>
+    <color name="ep_border">#DDD6EC</color>
 </resources>

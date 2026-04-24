@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Group40_ElderlyPals</string>
+    <string name="app_name">Elderly-Pals</string>
+    <string name="medication_name">Medication Name</string>
+    <string name="medication_time_sample">09:00 AM</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 </resources>

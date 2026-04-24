@@ -3,6 +3,7 @@ package my.edu.utar.group40_elderlypals;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
@@ -11,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.button.MaterialButton;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,6 +27,9 @@ public class MoodActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     private List<Integer> moodValues = new ArrayList<>();
     private List<String> timestamps = new ArrayList<>();
+
+    // Change this if you want another number
+    private static final String SUPPORT_PHONE = "01118770588";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +70,41 @@ public class MoodActivity extends AppCompatActivity {
         setupMoodCardHover(findViewById(R.id.cv_neutral), 3, "Neutral");
         setupMoodCardHover(findViewById(R.id.cv_sad), 2, "Sad");
         setupMoodCardHover(findViewById(R.id.cv_tired), 1, "Tired");
+
+        setupCommunicationButtons();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         loadMoodData();
+    }
+
+    private void setupCommunicationButtons() {
+        MaterialButton btnCall = findViewById(R.id.btn_call);
+        MaterialButton btnMessage = findViewById(R.id.btn_message);
+
+        btnCall.setOnClickListener(v -> {
+            try {
+                Intent dialIntent = new Intent(Intent.ACTION_DIAL);
+                dialIntent.setData(Uri.parse("tel:" + SUPPORT_PHONE));
+                startActivity(dialIntent);
+            } catch (Exception e) {
+                Toast.makeText(this, "Unable to open dialer", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnMessage.setOnClickListener(v -> {
+            try {
+                String message = "Hello, I need support from Elderly-Pals.";
+                Intent smsIntent = new Intent(Intent.ACTION_SENDTO);
+                smsIntent.setData(Uri.parse("smsto:" + SUPPORT_PHONE));
+                smsIntent.putExtra("sms_body", message);
+                startActivity(smsIntent);
+            } catch (Exception e) {
+                Toast.makeText(this, "Unable to open message app", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setupMoodCardHover(View view, int value, String label) {

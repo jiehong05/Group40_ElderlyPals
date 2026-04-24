@@ -3,23 +3,23 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#F5F5F5">
+    android:background="@color/ep_bg"
+    android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Header -->
         <TextView
             android:id="@+id/tv_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:text="&lt; Back"
-            android:textColor="@color/black"
+            android:textColor="@color/ep_text_primary"
             android:textSize="18sp"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -29,56 +29,110 @@
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:text="Logout"
-            android:textColor="#D32F2F"
+            android:textColor="@color/ep_red"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Chart Section -->
         <androidx.cardview.widget.CardView
             android:id="@+id/chart_card"
             android:layout_width="0dp"
-            android:layout_height="250dp"
-            android:layout_marginTop="8dp"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
+            android:layout_height="280dp"
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="@color/ep_surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_back">
+            app:layout_constraintTop_toBottomOf="@id/tv_back"
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp">
 
-            <my.edu.utar.group40_elderlypals.MoodChartView
-                android:id="@+id/mood_chart_view"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="16dp" />
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mood Overview"
+                        android:textColor="@color/ep_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+
+                </LinearLayout>
+
+                <my.edu.utar.group40_elderlypals.MoodChartView
+                    android:id="@+id/mood_chart_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Mood Options Grid -->
+        <TextView
+            android:id="@+id/tv_how_feeling"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="How are you feeling today?"
+            android:textColor="@color/ep_primary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/chart_card" />
+
         <androidx.cardview.widget.CardView
             android:id="@+id/cv_happy"
             android:layout_width="0dp"
             android:layout_height="120dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="14dp"
             android:layout_marginEnd="8dp"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/ep_green_soft"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="3dp"
             app:layout_constraintEnd_toStartOf="@+id/cv_neutral"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/chart_card">
+            app:layout_constraintTop_toBottomOf="@id/tv_how_feeling"
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
-                <TextView android:id="@+id/tv_happy_emoji" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="😊" android:textSize="32sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Happy" android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/tv_happy_emoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="😊"
+                    android:textSize="34sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Happy"
+                    android:textColor="@color/ep_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -87,24 +141,40 @@
             android:layout_width="0dp"
             android:layout_height="120dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="14dp"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/ep_yellow_soft"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="3dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@+id/cv_happy"
-            app:layout_constraintTop_toTopOf="@id/cv_happy">
+            app:layout_constraintTop_toBottomOf="@id/tv_how_feeling"
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
-                <TextView android:id="@+id/tv_neutral_emoji" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="😐" android:textSize="32sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Neutral" android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/tv_neutral_emoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="😐"
+                    android:textSize="34sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Neutral"
+                    android:textColor="@color/ep_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -116,22 +186,37 @@
             android:layout_marginEnd="8dp"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/ep_blue_soft"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="3dp"
             app:layout_constraintEnd_toStartOf="@+id/cv_tired"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cv_happy">
+            app:layout_constraintTop_toBottomOf="@id/cv_happy"
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
-                <TextView android:id="@+id/tv_sad_emoji" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="😔" android:textSize="32sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Sad" android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/tv_sad_emoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="😔"
+                    android:textSize="34sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Sad"
+                    android:textColor="@color/ep_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -140,53 +225,80 @@
             android:layout_width="0dp"
             android:layout_height="120dp"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
             android:clickable="true"
             android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
-            app:cardCornerRadius="8dp"
+            app:cardBackgroundColor="@color/ep_surface_soft"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="3dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@+id/cv_sad"
-            app:layout_constraintTop_toTopOf="@id/cv_sad">
+            app:layout_constraintTop_toBottomOf="@id/cv_neutral"
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical">
-                <TextView android:id="@+id/tv_tired_emoji" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="😴" android:textSize="32sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Tired" android:textSize="18sp" />
+
+                <TextView
+                    android:id="@+id/tv_tired_emoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="😴"
+                    android:textSize="34sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Tired"
+                    android:textColor="@color/ep_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Communication Buttons -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_call"
             android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@android:color/white"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/ep_surface"
             android:text="CALL"
-            android:textColor="@android:color/black"
+            android:textAllCaps="false"
+            android:textColor="@color/ep_text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:cornerRadius="28dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cv_sad" />
+            app:layout_constraintTop_toBottomOf="@id/cv_sad"
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_message"
             android:layout_width="0dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@android:color/white"
+            android:layout_height="56dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="14dp"
+            android:backgroundTint="@color/ep_surface"
             android:text="MESSAGE"
-            android:textColor="@android:color/black"
+            android:textAllCaps="false"
+            android:textColor="@color/ep_text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:cornerRadius="28dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_call"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:strokeColor="@color/ep_border"
+            app:strokeWidth="1dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

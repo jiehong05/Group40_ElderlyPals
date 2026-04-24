@@ -1,9 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.Group40_ElderlyPals" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/ep_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/ep_primary</item>
+        <item name="colorSurface">@color/ep_surface</item>
+        <item name="colorOnSurface">@color/ep_text_primary</item>
+        <item name="android:statusBarColor">@color/ep_primary</item>
+        <item name="android:navigationBarColor">@color/ep_bg</item>
+        <item name="android:windowBackground">@color/ep_bg</item>
     </style>
 
     <style name="Theme.Group40_ElderlyPals" parent="Base.Theme.Group40_ElderlyPals" />
+
 </resources>

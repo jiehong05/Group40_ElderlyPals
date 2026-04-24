@@ -11,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -32,22 +31,19 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class MedicationActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private MedicationAdapter adapter;
-    private List<Medication> medicationList = new ArrayList<>();
+    private final List<Medication> medicationList = new ArrayList<>();
     private SharedPreferences preferences;
     private TextView tvAlertZoneMed;
     private TextView tvDatePicker;
-    private Calendar calendar = Calendar.getInstance();
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-    private SimpleDateFormat displaySdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
+    private final Calendar calendar = Calendar.getInstance();
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,22 +58,7 @@ public class MedicationActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         updateDateDisplay();
-
-        tvDatePicker.setOnClickListener(v -> {
-            new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                updateDateDisplay();
-            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
-        });
-
-        findViewById(R.id.btn_record_intake).setOnClickListener(v -> {
-            recordMedicationIntake();
-        });
-
         loadMedications();
-        updateAlertZone();
 
         adapter = new MedicationAdapter(medicationList, new MedicationAdapter.OnMedicationClickListener() {
             @Override
@@ -90,12 +71,25 @@ public class MedicationActivity extends AppCompatActivity {
                 medicationList.remove(position);
                 saveMedications();
                 adapter.notifyItemRemoved(position);
+                updateAlertZone();
             }
         });
         recyclerView.setAdapter(adapter);
 
-        findViewById(R.id.tv_back).setOnClickListener(v -> finish());
+        updateAlertZone();
 
+        tvDatePicker.setOnClickListener(v -> {
+            new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                updateDateDisplay();
+                updateAlertZone();
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+        });
+
+        findViewById(R.id.btn_record_intake).setOnClickListener(v -> recordMedicationIntake());
+        findViewById(R.id.tv_back).setOnClickListener(v -> finish());
         findViewById(R.id.btn_add).setOnClickListener(v -> showMedicationDialog(-1));
 
         findViewById(R.id.tv_logout).setOnClickListener(v -> {
@@ -115,6 +109,10 @@ public class MedicationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        loadMedications();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
         updateAlertZone();
     }
 
@@ -130,25 +128,30 @@ public class MedicationActivity extends AppCompatActivity {
 
         String dateStr = sdf.format(calendar.getTime());
         String recordsJson = preferences.getString("medication_records_list", "[]");
-        
+
         try {
             JSONArray array = new JSONArray(recordsJson);
             boolean alreadyExists = false;
+
             for (int i = 0; i < array.length(); i++) {
                 if (array.getString(i).equals(dateStr)) {
                     alreadyExists = true;
                     break;
                 }
             }
-            
+
             if (alreadyExists) {
                 Toast.makeText(this, "Already recorded for " + dateStr, Toast.LENGTH_SHORT).show();
+                updateAlertZone();
                 return;
             }
 
             array.put(dateStr);
             preferences.edit().putString("medication_records_list", array.toString()).apply();
+
             Toast.makeText(this, "Recorded medication for " + dateStr, Toast.LENGTH_SHORT).show();
+            updateAlertZone();
+
         } catch (JSONException e) {
             e.printStackTrace();
             Toast.makeText(this, "Error recording intake", Toast.LENGTH_SHORT).show();
@@ -156,12 +159,29 @@ public class MedicationActivity extends AppCompatActivity {
     }
 
     private void updateAlertZone() {
-        String medicationHistory = preferences.getString("medicationHistory", "");
+        String selectedDate = sdf.format(calendar.getTime());
+        String recordsJson = preferences.getString("medication_records_list", "[]");
 
-        if (!medicationHistory.isEmpty()) {
-            tvAlertZoneMed.setText(medicationHistory);
+        boolean recordedToday = false;
+
+        try {
+            JSONArray array = new JSONArray(recordsJson);
+            for (int i = 0; i < array.length(); i++) {
+                if (selectedDate.equals(array.getString(i))) {
+                    recordedToday = true;
+                    break;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (medicationList.isEmpty()) {
+            tvAlertZoneMed.setText("No medicines added for today.");
+        } else if (recordedToday) {
+            tvAlertZoneMed.setText("Medicine recorded for today.");
         } else {
-            tvAlertZoneMed.setText("Alert Zone");
+            tvAlertZoneMed.setText("You have medicines scheduled for today.");
         }
     }
 
@@ -196,8 +216,8 @@ public class MedicationActivity extends AppCompatActivity {
         }
 
         builder.setPositiveButton(position == -1 ? "Add" : "Update", (dialog, which) -> {
-            String name = etName.getText().toString().trim();
-            String time = etTime.getText().toString().trim();
+            String name = etName.getText() != null ? etName.getText().toString().trim() : "";
+            String time = etTime.getText() != null ? etTime.getText().toString().trim() : "";
 
             int checkedId = rgColor.getCheckedRadioButtonId();
             String color = "Blue";
@@ -221,7 +241,9 @@ public class MedicationActivity extends AppCompatActivity {
                     med.color = color;
                     adapter.notifyItemChanged(position);
                 }
+
                 saveMedications();
+                updateAlertZone();
             } else {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             }
@@ -281,8 +303,8 @@ public class MedicationActivity extends AppCompatActivity {
     }
 
     static class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.ViewHolder> {
-        private List<Medication> list;
-        private OnMedicationClickListener listener;
+        private final List<Medication> list;
+        private final OnMedicationClickListener listener;
 
         interface OnMedicationClickListener {
             void onEdit(int position);
