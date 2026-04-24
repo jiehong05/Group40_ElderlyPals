@@ -41,10 +41,6 @@
             android:exported="false"
             android:windowSoftInputMode="stateHidden" />
 
-<!--        <activity-->
-<!--            android:name=".MenuActivity"-->
-<!--            android:exported="false" />-->
-
         <activity
             android:name=".MedicationActivity"
             android:exported="false" />

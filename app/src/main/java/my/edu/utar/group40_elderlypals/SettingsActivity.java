@@ -14,11 +14,14 @@ public class SettingsActivity extends AppCompatActivity {
     private View layoutUserInfo;
     private SharedPreferences preferences;
 
+    private HealthVaultDatabase db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
+        db = HealthVaultDatabase.getInstance(this);
         preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
         tvUserName = findViewById(R.id.tv_user_name);
@@ -26,7 +29,7 @@ public class SettingsActivity extends AppCompatActivity {
         layoutUserInfo = findViewById(R.id.layout_user_info);
 
         findViewById(R.id.tv_back).setOnClickListener(v -> finish());
-        
+
         findViewById(R.id.btn_profile).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
@@ -52,17 +55,24 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
-        String name = preferences.getString("userName", "User");
-        String phone = preferences.getString("userPhone", "-");
-        String address = preferences.getString("userAddress", "-");
-        boolean hideInfo = preferences.getBoolean("hideInfo", false);
+        HealthCard profile = db.healthCardDao().getHealthCard();
 
-        tvUserName.setText("Hi, " + name + ".");
+        if (profile != null) {
+            String name = profile.userName;
+            String phone = profile.userPhone;
+            String address = profile.userAddress;
+            boolean hideInfo = profile.hideInfo;
 
-        if (hideInfo) {
-            tvInfoDisplay.setText("Phone: ********\nAddress: ********");
+            tvUserName.setText("Hi, " + name + ".");
+
+            if (hideInfo) {
+                tvInfoDisplay.setText("Phone: ********\nAddress: ********");
+            } else {
+                tvInfoDisplay.setText("Phone: " + phone + "\nAddress: " + address);
+            }
         } else {
-            tvInfoDisplay.setText("Phone: " + phone + "\nAddress: " + address);
+            tvUserName.setText("Hi, User.");
+            tvInfoDisplay.setText("Phone: -\nAddress: -");
         }
     }
 }

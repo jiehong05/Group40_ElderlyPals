@@ -26,7 +26,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,11 +44,15 @@ public class MedicationActivity extends AppCompatActivity {
     private final Calendar calendar = Calendar.getInstance();
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
+    private HealthVaultDatabase db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_medication);
 
+        // 初始化数据库
+        db = HealthVaultDatabase.getInstance(this);
         preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
         tvAlertZoneMed = findViewById(R.id.tv_alert_zone_med);
@@ -58,7 +61,7 @@ public class MedicationActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         updateDateDisplay();
-        loadMedications();
+        refreshListFromDb();
 
         adapter = new MedicationAdapter(medicationList, new MedicationAdapter.OnMedicationClickListener() {
             @Override
@@ -68,9 +71,8 @@ public class MedicationActivity extends AppCompatActivity {
 
             @Override
             public void onDelete(int position) {
-                medicationList.remove(position);
-                saveMedications();
-                adapter.notifyItemRemoved(position);
+                db.medicationDao().delete(medicationList.get(position));
+                refreshListFromDb();
                 updateAlertZone();
             }
         });
@@ -109,11 +111,16 @@ public class MedicationActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadMedications();
+        refreshListFromDb();
+        updateAlertZone();
+    }
+
+    private void refreshListFromDb() {
+        medicationList.clear();
+        medicationList.addAll(db.medicationDao().getAllMedications());
         if (adapter != null) {
             adapter.notifyDataSetChanged();
         }
-        updateAlertZone();
     }
 
     private void updateDateDisplay() {
@@ -132,7 +139,6 @@ public class MedicationActivity extends AppCompatActivity {
         try {
             JSONArray array = new JSONArray(recordsJson);
             boolean alreadyExists = false;
-
             for (int i = 0; i < array.length(); i++) {
                 if (array.getString(i).equals(dateStr)) {
                     alreadyExists = true;
@@ -148,20 +154,17 @@ public class MedicationActivity extends AppCompatActivity {
 
             array.put(dateStr);
             preferences.edit().putString("medication_records_list", array.toString()).apply();
-
             Toast.makeText(this, "Recorded medication for " + dateStr, Toast.LENGTH_SHORT).show();
             updateAlertZone();
 
         } catch (JSONException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error recording intake", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void updateAlertZone() {
         String selectedDate = sdf.format(calendar.getTime());
         String recordsJson = preferences.getString("medication_records_list", "[]");
-
         boolean recordedToday = false;
 
         try {
@@ -198,51 +201,36 @@ public class MedicationActivity extends AppCompatActivity {
             Medication med = medicationList.get(position);
             etName.setText(med.name);
             etTime.setText(med.time);
-
-            switch (med.color) {
-                case "Yellow":
-                    rgColor.check(R.id.rb_yellow);
-                    break;
-                case "Red":
-                    rgColor.check(R.id.rb_red);
-                    break;
-                case "Green":
-                    rgColor.check(R.id.rb_green);
-                    break;
-                case "Blue":
-                    rgColor.check(R.id.rb_blue);
-                    break;
+            if (med.color != null) {
+                switch (med.color) {
+                    case "Yellow": rgColor.check(R.id.rb_yellow); break;
+                    case "Red": rgColor.check(R.id.rb_red); break;
+                    case "Green": rgColor.check(R.id.rb_green); break;
+                    case "Blue": rgColor.check(R.id.rb_blue); break;
+                }
             }
         }
 
         builder.setPositiveButton(position == -1 ? "Add" : "Update", (dialog, which) -> {
             String name = etName.getText() != null ? etName.getText().toString().trim() : "";
             String time = etTime.getText() != null ? etTime.getText().toString().trim() : "";
-
             int checkedId = rgColor.getCheckedRadioButtonId();
             String color = "Blue";
-
-            if (checkedId == R.id.rb_yellow) {
-                color = "Yellow";
-            } else if (checkedId == R.id.rb_red) {
-                color = "Red";
-            } else if (checkedId == R.id.rb_green) {
-                color = "Green";
-            }
+            if (checkedId == R.id.rb_yellow) color = "Yellow";
+            else if (checkedId == R.id.rb_red) color = "Red";
+            else if (checkedId == R.id.rb_green) color = "Green";
 
             if (!name.isEmpty() && !time.isEmpty()) {
                 if (position == -1) {
-                    medicationList.add(new Medication(name, time, color));
-                    adapter.notifyItemInserted(medicationList.size() - 1);
+                    db.medicationDao().insert(new Medication(name, time, color));
                 } else {
                     Medication med = medicationList.get(position);
                     med.name = name;
                     med.time = time;
                     med.color = color;
-                    adapter.notifyItemChanged(position);
+                    db.medicationDao().update(med);
                 }
-
-                saveMedications();
+                refreshListFromDb();
                 updateAlertZone();
             } else {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
@@ -251,55 +239,6 @@ public class MedicationActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Cancel", null);
         builder.show();
-    }
-
-    private void saveMedications() {
-        JSONArray jsonArray = new JSONArray();
-
-        try {
-            for (Medication med : medicationList) {
-                JSONObject obj = new JSONObject();
-                obj.put("name", med.name);
-                obj.put("time", med.time);
-                obj.put("color", med.color);
-                jsonArray.put(obj);
-            }
-            preferences.edit().putString("medications", jsonArray.toString()).apply();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadMedications() {
-        String json = preferences.getString("medications", "[]");
-
-        try {
-            JSONArray jsonArray = new JSONArray(json);
-            medicationList.clear();
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject obj = jsonArray.getJSONObject(i);
-                medicationList.add(new Medication(
-                        obj.getString("name"),
-                        obj.getString("time"),
-                        obj.getString("color")
-                ));
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    static class Medication {
-        String name;
-        String time;
-        String color;
-
-        Medication(String name, String time, String color) {
-            this.name = name;
-            this.time = time;
-            this.color = color;
-        }
     }
 
     static class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.ViewHolder> {
@@ -329,33 +268,21 @@ public class MedicationActivity extends AppCompatActivity {
             holder.tvName.setText(med.name);
             holder.tvTime.setText(med.time);
 
-            int color;
-            switch (med.color) {
-                case "Yellow":
-                    color = Color.YELLOW;
-                    break;
-                case "Red":
-                    color = Color.RED;
-                    break;
-                case "Green":
-                    color = Color.GREEN;
-                    break;
-                default:
-                    color = Color.BLUE;
-                    break;
+            int colorCode;
+            switch (med.color != null ? med.color : "Blue") {
+                case "Yellow": colorCode = Color.YELLOW; break;
+                case "Red": colorCode = Color.RED; break;
+                case "Green": colorCode = Color.GREEN; break;
+                default: colorCode = Color.BLUE; break;
             }
-            holder.viewColor.setBackgroundColor(color);
+            holder.viewColor.setBackgroundColor(colorCode);
 
             holder.viewColor.setOnHoverListener((v, event) -> {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_HOVER_ENTER:
-                        v.animate().scaleX(1.5f).scaleY(1.5f).setDuration(200).start();
-                        v.playSoundEffect(SoundEffectConstants.CLICK);
-                        v.postDelayed(() -> v.playSoundEffect(SoundEffectConstants.CLICK), 50);
-                        break;
-                    case MotionEvent.ACTION_HOVER_EXIT:
-                        v.postDelayed(() -> v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start(), 500);
-                        break;
+                if (event.getAction() == MotionEvent.ACTION_HOVER_ENTER) {
+                    v.animate().scaleX(1.5f).scaleY(1.5f).setDuration(200).start();
+                    v.playSoundEffect(SoundEffectConstants.CLICK);
+                } else if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
                 }
                 return false;
             });
@@ -370,11 +297,9 @@ public class MedicationActivity extends AppCompatActivity {
         }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView tvName;
-            TextView tvTime;
+            TextView tvName, tvTime;
             View viewColor;
-            ImageButton btnEdit;
-            ImageButton btnDelete;
+            ImageButton btnEdit, btnDelete;
 
             ViewHolder(View itemView) {
                 super(itemView);
