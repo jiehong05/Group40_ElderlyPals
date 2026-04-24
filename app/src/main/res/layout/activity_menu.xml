@@ -53,16 +53,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:layout_margin="4dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="2dp">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
 
-                <TextView
-                    android:id="@+id/TVWelcome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="Alert Zone"
-                    android:textSize="32sp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#BBDEFB"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/TVWelcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Alert Zone"
+                        android:textColor="#1976D2"
+                        android:textSize="32sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <!-- Voice Assistant Button -->
@@ -73,12 +82,12 @@
                 android:layout_height="70dp"
                 android:layout_margin="4dp"
                 android:layout_marginTop="16dp"
-                android:backgroundTint="@android:color/white"
+                android:backgroundTint="#2196F3"
                 android:drawableEnd="@android:drawable/ic_btn_speak_now"
                 android:padding="16dp"
-                android:text="Voice Assistant Button"
+                android:text="Voice Assistant"
                 android:textAllCaps="false"
-                android:textColor="@android:color/black"
+                android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 app:cornerRadius="35dp" />
 
@@ -94,7 +103,8 @@
                     android:layout_width="0dp"
                     android:layout_height="110dp"
                     android:layout_margin="4dp"
-                    app:cardCornerRadius="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
                     app:layout_constraintEnd_toStartOf="@+id/cv_mood"
                     app:layout_constraintHorizontal_weight="1"
                     app:layout_constraintStart_toStartOf="parent"
@@ -103,19 +113,22 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="#E1F5FE"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Medication Log" />
+                            android:text="Medication Log"
+                            android:textColor="#0288D1"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="💊"
-                            android:textSize="24sp" />
+                            android:textSize="32sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -124,7 +137,8 @@
                     android:layout_width="0dp"
                     android:layout_height="110dp"
                     android:layout_margin="4dp"
-                    app:cardCornerRadius="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_weight="1"
                     app:layout_constraintStart_toEndOf="@+id/cv_medication"
@@ -133,19 +147,22 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="#FFF9C4"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Mood Log" />
+                            android:text="Mood Log"
+                            android:textColor="#FBC02D"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="😊"
-                            android:textSize="24sp" />
+                            android:textSize="32sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -155,7 +172,8 @@
                     android:layout_height="110dp"
                     android:layout_margin="4dp"
                     android:layout_marginTop="8dp"
-                    app:cardCornerRadius="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
                     app:layout_constraintEnd_toStartOf="@+id/cv_settings"
                     app:layout_constraintHorizontal_weight="1"
                     app:layout_constraintStart_toStartOf="parent"
@@ -164,19 +182,22 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="#E8F5E9"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Health Badges" />
+                            android:text="Health Badges"
+                            android:textColor="#388E3C"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="🏆"
-                            android:textSize="24sp" />
+                            android:textSize="32sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -186,7 +207,8 @@
                     android:layout_height="110dp"
                     android:layout_margin="4dp"
                     android:layout_marginTop="8dp"
-                    app:cardCornerRadius="4dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_weight="1"
                     app:layout_constraintStart_toEndOf="@+id/cv_health"
@@ -195,19 +217,22 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:background="#F3E5F5"
                         android:gravity="center"
                         android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Settings" />
+                            android:text="Settings"
+                            android:textColor="#7B1FA2"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="⚙️"
-                            android:textSize="24sp" />
+                            android:textSize="32sp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 

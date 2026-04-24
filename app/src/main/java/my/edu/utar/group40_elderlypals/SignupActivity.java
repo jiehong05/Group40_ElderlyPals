@@ -37,6 +37,12 @@ public class SignupActivity extends AppCompatActivity {
         // Initial state: grey
         btnCreate.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#9E9E9E")));
 
+        v1 = findViewById(R.id.view_strength_1);
+        v2 = findViewById(R.id.view_strength_2);
+        v3 = findViewById(R.id.view_strength_3);
+        v4 = findViewById(R.id.view_strength_4);
+        tvStrengthText = findViewById(R.id.tv_strength_text);
+
         TextWatcher signupWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}

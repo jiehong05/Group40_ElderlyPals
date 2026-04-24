@@ -1,5 +1,6 @@
 package my.edu.utar.group40_elderlypals;
 
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -27,8 +29,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public class MedicationActivity extends AppCompatActivity {
 
@@ -37,6 +44,10 @@ public class MedicationActivity extends AppCompatActivity {
     private List<Medication> medicationList = new ArrayList<>();
     private SharedPreferences preferences;
     private TextView tvAlertZoneMed;
+    private TextView tvDatePicker;
+    private Calendar calendar = Calendar.getInstance();
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private SimpleDateFormat displaySdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,8 +57,24 @@ public class MedicationActivity extends AppCompatActivity {
         preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
         tvAlertZoneMed = findViewById(R.id.tv_alert_zone_med);
+        tvDatePicker = findViewById(R.id.tv_date_picker);
         recyclerView = findViewById(R.id.rv_medication);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        updateDateDisplay();
+
+        tvDatePicker.setOnClickListener(v -> {
+            new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, month);
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                updateDateDisplay();
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show();
+        });
+
+        findViewById(R.id.btn_record_intake).setOnClickListener(v -> {
+            recordMedicationIntake();
+        });
 
         loadMedications();
         updateAlertZone();
@@ -89,6 +116,43 @@ public class MedicationActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateAlertZone();
+    }
+
+    private void updateDateDisplay() {
+        tvDatePicker.setText(String.format(Locale.getDefault(), "Date: %s", sdf.format(calendar.getTime())));
+    }
+
+    private void recordMedicationIntake() {
+        if (medicationList.isEmpty()) {
+            Toast.makeText(this, "Please add medications first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String dateStr = sdf.format(calendar.getTime());
+        String recordsJson = preferences.getString("medication_records_list", "[]");
+        
+        try {
+            JSONArray array = new JSONArray(recordsJson);
+            boolean alreadyExists = false;
+            for (int i = 0; i < array.length(); i++) {
+                if (array.getString(i).equals(dateStr)) {
+                    alreadyExists = true;
+                    break;
+                }
+            }
+            
+            if (alreadyExists) {
+                Toast.makeText(this, "Already recorded for " + dateStr, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            array.put(dateStr);
+            preferences.edit().putString("medication_records_list", array.toString()).apply();
+            Toast.makeText(this, "Recorded medication for " + dateStr, Toast.LENGTH_SHORT).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error recording intake", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateAlertZone() {

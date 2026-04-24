@@ -169,5 +169,13 @@ public class MoodActivity extends AppCompatActivity {
         }
 
         moodChartView.setData(new ArrayList<>(moodValues), new ArrayList<>(timestamps));
+        moodChartView.setOnPointSelectedListener(index -> {
+            if (index >= 0 && index < moodValues.size()) {
+                moodValues.remove(index);
+                timestamps.remove(index);
+                saveMoodData();
+                loadMoodData();
+            }
+        });
     }
 }
