@@ -33,14 +33,13 @@ public class LocationHelper {
                         if (location != null) {
                             callback.onLocationReady(location.getLatitude(), location.getLongitude());
                         } else {
-                            // Fallback to Kampar coordinates if GPS is off
+                            // Fallback to Kuala Lumpur coordinates if GPS is off
                             callback.onLocationReady(4.3072, 101.1529);
                         }
                     }
                 });
     }
 
-    // Convert lat/lon to City Name (e.g., "Kampar")
     public String getCityName(double lat, double lon) {
         String cityName = "Unknown Location";
         if (context == null) return cityName;
@@ -49,7 +48,6 @@ public class LocationHelper {
         try {
             List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
             if (addresses != null && !addresses.isEmpty()) {
-                // locality usually returns the city name like "Kampar"
                 cityName = addresses.get(0).getLocality();
                 if (cityName == null) {
                     cityName = addresses.get(0).getAdminArea(); // Fallback to state/region

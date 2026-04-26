@@ -67,12 +67,17 @@
 
                     <TextView
                         android:id="@+id/TVWelcome"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Alert Zone"
-                        android:textColor="@color/ep_primary"
-                        android:textSize="30sp"
-                        android:textStyle="bold" />
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:textColor="#5E4BB5"
+                        android:textStyle="bold"
+
+                        app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="12sp"
+                        app:autoSizeMaxTextSize="28sp"
+                        app:autoSizeStepGranularity="1sp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

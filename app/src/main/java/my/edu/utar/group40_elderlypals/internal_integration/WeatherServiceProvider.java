@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class WeatherServiceProvider {
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
     private WeatherApiService apiService;
-    private String apiKey = "0c9e1afffa3812d8e53358c8e2f399f6"; // Put your OpenWeatherMap key here
+    private String apiKey = "0c9e1afffa3812d8e53358c8e2f399f6";
 
     public WeatherServiceProvider() {
         Retrofit retrofit = new Retrofit.Builder()
@@ -39,7 +39,6 @@ public class WeatherServiceProvider {
     }
 
     private String generateSmartAdvice(float temp) {
-        // Predictive Environmental Guard Logic (Proposal Section 3.1)
         if (temp > 33) {
             return "It is very hot today (" + temp + "°C). Please drink extra water and stay indoors.";
         } else if (temp < 24) {
