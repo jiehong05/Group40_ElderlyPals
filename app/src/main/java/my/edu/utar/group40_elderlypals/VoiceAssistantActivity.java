@@ -1,16 +1,15 @@
 package my.edu.utar.group40_elderlypals;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.AlertDialog;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -20,9 +19,9 @@ import androidx.core.content.ContextCompat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
-import android.app.AlertDialog;
 import my.edu.utar.group40_elderlypals.internal_integration.EmergencyManager;
 import my.edu.utar.group40_elderlypals.internal_integration.LocationHelper;
 
@@ -31,16 +30,18 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
     private Button btnSpeak;
 
     private ActivityResultLauncher<String> callPermissionLauncher;
-
     private ActivityResultLauncher<String> locationPermissionLauncher;
+    private ActivityResultLauncher<Intent> speechLauncher;
+    private ActivityResultLauncher<String> permissionLauncher;
+
     private LocationHelper locationHelper;
     private EmergencyManager emergencyManager;
     private TextView tvRecognizedText;
     private TextView tvSystemResponse;
     private TextToSpeech textToSpeech;
 
-    private ActivityResultLauncher<Intent> speechLauncher;
-    private ActivityResultLauncher<String> permissionLauncher;
+    // Use the same database as MoodActivity and MedicationActivity
+    private HealthVaultDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,8 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
         textToSpeech = new TextToSpeech(this, this);
         locationHelper = new LocationHelper(this);
         emergencyManager = new EmergencyManager();
+        db = HealthVaultDatabase.getInstance(this);
+
         setupLocationPermissionLauncher();
         setupCallPermissionLauncher();
         setupSpeechLauncher();
@@ -88,7 +91,6 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
         );
     }
 
-
     private void checkLocationPermissionAndTriggerEmergency() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -104,6 +106,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
 
         triggerEmergencyWithLocation();
     }
+
     private void triggerEmergencyWithLocation() {
         locationHelper.getCurrentLocation((lat, lon) -> {
             String emergencyMessage = emergencyManager.createEmergencyMessage(lat, lon);
@@ -199,110 +202,81 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
         String commandType = action.getCommandType();
         String payload = action.getPayload();
 
-        if (commandType.equals("MOOD")) {
-            saveMoodToSharedPreferences(payload);
+        if ("MOOD".equals(commandType)) {
+            saveMoodToDatabase(payload);
             Toast.makeText(this, "Mood saved: " + payload, Toast.LENGTH_SHORT).show();
 
-        } else if (commandType.equals("MEDICATION")) {
-            saveMedicationToSharedPreferences(payload);
+        } else if ("MEDICATION".equals(commandType)) {
+            saveMedicationToDatabase(payload);
             Toast.makeText(this, "Medication saved: " + payload, Toast.LENGTH_SHORT).show();
 
-        } else if (commandType.equals("EMERGENCY")) {
+        } else if ("EMERGENCY".equals(commandType)) {
             checkLocationPermissionAndTriggerEmergency();
         }
     }
 
-    private void saveMoodToSharedPreferences(String moodLabel) {
-        SharedPreferences preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
+    private void saveMoodToDatabase(String moodLabel) {
+        int moodValue;
 
-        int moodValue = 3;
-        if (moodLabel.equals("happy")) {
-            moodValue = 4;
-        } else if (moodLabel.equals("neutral")) {
-            moodValue = 3;
-        } else if (moodLabel.equals("sad")) {
-            moodValue = 2;
-        } else if (moodLabel.equals("tired")) {
-            moodValue = 1;
+        switch (moodLabel) {
+            case "happy":
+                moodValue = 4;
+                break;
+            case "neutral":
+                moodValue = 3;
+                break;
+            case "sad":
+                moodValue = 2;
+                break;
+            case "tired":
+                moodValue = 1;
+                break;
+            default:
+                moodValue = 3;
+                break;
         }
-
-        String savedVals = preferences.getString("moodValues", "");
-        String savedTimes = preferences.getString("moodTimes", "");
 
         String timeStamp = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 
-        String newVals;
-        String newTimes;
+        MoodLog newLog = new MoodLog(moodValue, timeStamp);
+        db.moodLogDao().insert(newLog);
 
-        if (savedVals.isEmpty()) {
-            newVals = String.valueOf(moodValue);
-            newTimes = timeStamp;
-        } else {
-            newVals = savedVals + "," + moodValue;
-            newTimes = savedTimes + "," + timeStamp;
+        // Keep at most 7 recent records, same idea as MoodActivity
+        List<MoodLog> allLogs = db.moodLogDao().getAllMoodLogs();
+        if (allLogs.size() > 7) {
+            db.moodLogDao().delete(allLogs.get(0));
         }
-
-        preferences.edit()
-                .putString("moodValues", newVals)
-                .putString("moodTimes", newTimes)
-                .apply();
     }
 
-    private void saveMedicationToSharedPreferences(String medicationColor) {
-        SharedPreferences preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
-
+    private void saveMedicationToDatabase(String medicationColor) {
         String displayColor;
-        if (medicationColor.equals("yellow")) {
-            displayColor = "Yellow";
-        } else if (medicationColor.equals("red")) {
-            displayColor = "Red";
-        } else if (medicationColor.equals("white")) {
-            displayColor = "White";
-        } else if (medicationColor.equals("green")) {
-            displayColor = "Green";
-        } else if (medicationColor.equals("blue")) {
-            displayColor = "Blue";
-        } else {
-            displayColor = "Unknown";
+
+        switch (medicationColor) {
+            case "yellow":
+                displayColor = "Yellow";
+                break;
+            case "red":
+                displayColor = "Red";
+                break;
+            case "white":
+                displayColor = "White";
+                break;
+            case "green":
+                displayColor = "Green";
+                break;
+            case "blue":
+                displayColor = "Blue";
+                break;
+            default:
+                displayColor = "Blue";
+                break;
         }
 
-        String timeStamp = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
-                .format(new java.util.Date());
+        String timeStamp = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
 
-        String oldHistory = preferences.getString("medicationHistory", "");
-        String[] lines = oldHistory.isEmpty() ? new String[0] : oldHistory.split("\n");
-
-        StringBuilder updatedHistory = new StringBuilder();
-        boolean found = false;
-
-        for (String line : lines) {
-            if (line.startsWith(displayColor + " pill at ")) {
-                // Replace old record of same color with newest time
-                if (updatedHistory.length() > 0) {
-                    updatedHistory.append("\n");
-                }
-                updatedHistory.append(displayColor).append(" pill at ").append(timeStamp);
-                found = true;
-            } else if (!line.trim().isEmpty()) {
-                if (updatedHistory.length() > 0) {
-                    updatedHistory.append("\n");
-                }
-                updatedHistory.append(line);
-            }
-        }
-
-        if (!found) {
-            if (updatedHistory.length() > 0) {
-                updatedHistory.append("\n");
-            }
-            updatedHistory.append(displayColor).append(" pill at ").append(timeStamp);
-        }
-
-        preferences.edit()
-                .putString("medicationHistory", updatedHistory.toString())
-                .putString("lastMedicationColor", displayColor)
-                .putString("lastMedicationTime", timeStamp)
-                .apply();
+        // Since voice command currently provides color, use color pill as the simple name
+        Medication medication = new Medication(displayColor + " pill", timeStamp, displayColor);
+        db.medicationDao().insert(medication);
     }
 
     private void speakOut(String message) {

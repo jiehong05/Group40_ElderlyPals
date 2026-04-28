@@ -51,7 +51,6 @@ public class MedicationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_medication);
 
-        // 初始化数据库
         db = HealthVaultDatabase.getInstance(this);
         preferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
 
@@ -203,10 +202,21 @@ public class MedicationActivity extends AppCompatActivity {
             etTime.setText(med.time);
             if (med.color != null) {
                 switch (med.color) {
-                    case "Yellow": rgColor.check(R.id.rb_yellow); break;
-                    case "Red": rgColor.check(R.id.rb_red); break;
-                    case "Green": rgColor.check(R.id.rb_green); break;
-                    case "Blue": rgColor.check(R.id.rb_blue); break;
+                    case "Yellow":
+                        rgColor.check(R.id.rb_yellow);
+                        break;
+                    case "Red":
+                        rgColor.check(R.id.rb_red);
+                        break;
+                    case "Green":
+                        rgColor.check(R.id.rb_green);
+                        break;
+                    case "Blue":
+                        rgColor.check(R.id.rb_blue);
+                        break;
+                    case "White":
+                        rgColor.check(R.id.rb_white);
+                        break;
                 }
             }
         }
@@ -214,11 +224,15 @@ public class MedicationActivity extends AppCompatActivity {
         builder.setPositiveButton(position == -1 ? "Add" : "Update", (dialog, which) -> {
             String name = etName.getText() != null ? etName.getText().toString().trim() : "";
             String time = etTime.getText() != null ? etTime.getText().toString().trim() : "";
+
             int checkedId = rgColor.getCheckedRadioButtonId();
             String color = "Blue";
+
             if (checkedId == R.id.rb_yellow) color = "Yellow";
             else if (checkedId == R.id.rb_red) color = "Red";
             else if (checkedId == R.id.rb_green) color = "Green";
+            else if (checkedId == R.id.rb_blue) color = "Blue";
+            else if (checkedId == R.id.rb_white) color = "White";
 
             if (!name.isEmpty() && !time.isEmpty()) {
                 if (position == -1) {
@@ -270,12 +284,31 @@ public class MedicationActivity extends AppCompatActivity {
 
             int colorCode;
             switch (med.color != null ? med.color : "Blue") {
-                case "Yellow": colorCode = Color.YELLOW; break;
-                case "Red": colorCode = Color.RED; break;
-                case "Green": colorCode = Color.GREEN; break;
-                default: colorCode = Color.BLUE; break;
+                case "Yellow":
+                    colorCode = Color.YELLOW;
+                    break;
+                case "Red":
+                    colorCode = Color.RED;
+                    break;
+                case "Green":
+                    colorCode = Color.GREEN;
+                    break;
+                case "White":
+                    colorCode = Color.WHITE;
+                    break;
+                default:
+                    colorCode = Color.BLUE;
+                    break;
             }
+
             holder.viewColor.setBackgroundColor(colorCode);
+
+            // optional border for white dot visibility
+            if ("White".equals(med.color)) {
+                holder.viewColor.setBackgroundResource(android.R.drawable.alert_light_frame);
+            } else {
+                holder.viewColor.setBackgroundColor(colorCode);
+            }
 
             holder.viewColor.setOnHoverListener((v, event) -> {
                 if (event.getAction() == MotionEvent.ACTION_HOVER_ENTER) {

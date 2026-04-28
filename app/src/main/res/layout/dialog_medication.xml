@@ -80,8 +80,7 @@
         android:id="@+id/rg_color"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
         <RadioButton
             android:id="@+id/rb_yellow"
@@ -96,7 +95,6 @@
             android:id="@+id/rb_red"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:text="Red"
             android:textColor="@color/ep_text_primary"
             android:buttonTint="@color/ep_red"
@@ -106,7 +104,6 @@
             android:id="@+id/rb_green"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:text="Green"
             android:textColor="@color/ep_text_primary"
             android:buttonTint="@color/ep_green"
@@ -116,10 +113,18 @@
             android:id="@+id/rb_blue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:text="Blue"
             android:textColor="@color/ep_text_primary"
             android:buttonTint="@color/ep_primary"
+            android:textSize="15sp" />
+
+        <RadioButton
+            android:id="@+id/rb_white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="White"
+            android:textColor="@color/ep_text_primary"
+            android:buttonTint="@android:color/white"
             android:textSize="15sp" />
     </RadioGroup>
 
