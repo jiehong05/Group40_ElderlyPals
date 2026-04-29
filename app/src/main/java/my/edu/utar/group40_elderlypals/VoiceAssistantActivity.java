@@ -119,7 +119,7 @@ public class VoiceAssistantActivity extends AppCompatActivity implements TextToS
                         .setTitle("Emergency Alert")
                         .setMessage(emergencyMessage)
                         .setPositiveButton("Call Now", (dialog, which) -> {
-                            String emergencyNumber = "tel:01118770588";
+                            String emergencyNumber = "tel:0195613287";
                             Intent callIntent = new Intent(Intent.ACTION_CALL);
                             callIntent.setData(android.net.Uri.parse(emergencyNumber));
 
